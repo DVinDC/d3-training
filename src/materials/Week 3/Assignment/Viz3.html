@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="http://d3js.org/d3.v4.min.js"></script>
+  </head>
+  <body>
+    <script>
+    d3.json("data.json", function(data){
+        console.log(data);
+
+    var svg = d3.select("body")
+              .append("svg")
+              .attr("width", 1000)
+              .attr("height", 1000)
+              .attr("color", "red");
+
+    function updateViz(data) {
+    var circs = 
+    d3.select('svg')
+    .selectAll("circle")
+    .data(data)
+
+    var xpos = Math.random() * 1000;
+    var ypos = Math.random() * 1000;
+
+    circs
+      .enter()
+      .append("circle")
+      .attr("r", function(d) {return d.size})
+      .attr("stroke", function(d) {return d.color})
+      .attr("stroke-width", 5)
+      .attr("cx", function(d,i) {return xpos/(i + 1)})
+      .attr("cy", function(d,i) {return ypos/(i + 1)});
+      //.attr("cx", 125)
+      //.attr("cy", function(d, i) {return i * 100});
+    
+    circs
+      .exit()
+      .remove();
+    }
+
+    function animate(data) {
+    updateViz(data);
+    var loop = setInterval(function() { 
+        if (data.length === 0) { clearInterval(loop); }
+        data.pop();
+        updateViz(data);
+    }, 2000);
+    }
+
+
+    animate(data);
+
+    });
+
+    </script>
+  </body>
+</html>
