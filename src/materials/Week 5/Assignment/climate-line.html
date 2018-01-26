@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="http://d3js.org/d3.v4.min.js"></script>
+  </head>
+  <body>
+    <script>
+    d3.json("climate.json", function(data){
+        //console.log(data);
+
+    var width = 1500;
+    var height = 750;
+
+    var margin = {
+      top: 50,
+      right: 50,
+      bottom: 50,
+      left: 50
+    };
+
+    var innerWidth = width - margin.left - margin.right;
+    var innerHeight = height - margin.top - margin.bottom;
+
+    console.log(innerWidth);
+    console.log(innerHeight);
+
+    var svg = d3.select("body")
+              .append("svg")
+              .attr("width", width)
+              .attr("height", height)
+
+    var g = svg
+            .append('g')
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top +')');
+
+    var parseTime = d3.timeParse('%Y');
+
+    data.forEach(function(d) {
+      d.temp = +d.temp;
+      d.date = parseTime((+d.year).toString());
+      //d.date = +d.year;
+    });
+
+    console.log(data);
+
+    var minYear = d3.min(data, function(d) {return d.date;});
+    var maxYear = d3.max(data, function(d) {return d.date;});
+
+    console.log(minYear);
+    console.log(maxYear);
+
+    var x = d3
+              .scaleTime()
+              .domain([
+                  d3.min(data, function(d) {return d.date;}),
+                  d3.max(data, function(d) {return d.date;})
+              ])
+              .range([0,innerWidth]);
+
+    console.log(x.domain(), x.range ());
+
+    var y = d3
+              .scaleLinear()
+              .domain(
+                d3.extent(data, function(d) {
+                  return d.temp;
+                })
+              )
+              .range([innerHeight, 0]); 
+
+    console.log(y.domain(), y.range());
+
+
+    var xAxis = d3.axisBottom(x).ticks(d3.timeYear.every(10));
+
+    g
+      .append('g')
+      .attr('transform', 'translate(0,' + innerHeight + ')')
+      .call(xAxis);
+
+    var yAxis = d3.axisLeft(y).ticks(10);
+
+    g
+      .append('g')
+      .call(yAxis);
+
+    var line = d3
+            .line()
+            .x(function(d) {
+                return x(d.date);
+            })
+            .y(function(d) {
+                return y(d.temp);
+            });
+
+    g
+      .append('path')
+      .datum(data)
+      .attr('fill', 'none')
+      .attr('stroke', 'blue')
+      .attr('stroke-width', 1.5)
+      .attr('d', line);
+
+
+    g
+      .selectAll('.year-point')
+      .data(data)
+      .enter()
+      .append('circle')
+        .attr('class', 'year-point')
+        .attr('fill', 'blue')
+        .attr('stroke', 'none')
+        .attr('cx', function(d){
+          return x(d.date);
+        })
+        .attr('cy', function(d){
+          return y(d.temp);
+        })
+        .attr('r', 2);
+
+    g
+      .selectAll('.point-text')
+      .data(data)
+      .enter()
+      .append('text')
+        .attr('class', 'point-text')
+        .text(function(d){
+          return d.year
+        })
+        .attr('x', function(d){
+          return x(d.date);
+        })
+        .attr('y', function(d){
+          return y(d.temp);
+        })
+        .style('font-size', "10px");
+
+
+
+//Construct Axes and axis labels
+
+    g
+      .append('text')
+      .attr('x', innerWidth/2)
+      .attr('y', innerHeight + 20)
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'hanging')
+      .text('Year')
+      .attr('font-family', 'sans-serif')
+      .attr('font-weight', 'bold')
+      .attr('font-size', '14px');
+
+    g
+      .append('text')
+      .attr('x', innerWidth/2)
+      .attr('y', -20)
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'baseline')
+      .attr('font-family', 'sans-serif')
+      .style('font-size', "20px")
+      .attr('font-weight', 'bold')
+      .text('Temperature Change by Year');
+
+    g
+      .append('text')
+      .attr('x', -20)
+      .attr('y', innerHeight/2-5)
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', 'baseline')
+      .attr('font-family', 'sans-serif')
+      .style('font-size', '14px')
+      .attr('font-weight', 'bold')
+      .attr('transform', 'rotate(-90,-30,' + innerHeight / 2 + ')')
+      .text('Temperature Change');
+    
+    });
+
+    </script>
+  </body>
+</html>
+
