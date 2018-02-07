@@ -1,0 +1,243 @@
+<!doctype html>
+<html>
+  <head>
+    <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+    <meta content="utf-8" http-equiv="encoding">
+    <script src="http://d3js.org/d3.v4.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+  </head>
+  <body>
+    <script>
+    d3.json("pokemon.json", function(data){
+        //console.log(data);
+
+    var width = 1000;
+    var height = 500;
+
+    var margin = {
+      top: 50,
+      right: 50,
+      bottom: 50,
+      left: 100
+    };
+
+    var innerWidth = width - margin.left - margin.right;
+    var innerHeight = height - margin.top - margin.bottom;
+
+    var svg = d3.select("body")
+              .append("svg")
+              .attr("width", width)
+              .attr("height", height)
+
+    var g = svg
+            .append('g')
+            .attr('transform', 'translate(' + margin.left + ',' + margin.top +')');
+
+    g
+      .append('text')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr("dy", "0em")
+      .text("Assignment 6 results appear in the console")
+      .attr('font-family', 'sans-serif')
+      .attr('font-weight', 'bold')
+      .attr('font-size', '14px')
+
+
+//Creating additional attributes for each data point by which to sum up in order to get total counts
+    data.forEach(function(d) {
+      //convert height to inches
+      d.height_inches = (d.height.slice(0, -2)) * 39.3701;
+      //convert weight to pounds
+      d.weight_lbs = (d.weight.slice(0, -3)) * 2.20462;
+      d.count = 1;
+      //new property "egg_new" counts "Not in eggs" as -1, otherwise contains egg distance
+      if(d.egg == "Not in Eggs") {d.egg_new = -1} else {d.egg_new = +d.egg.slice(0, -3)};
+      //count of weaknesses for each object
+      d.weakness_count = d.weaknesses.length;
+      //convert spawn time to minutes
+      d.spawn_time_split = d.spawn_time.split(':');
+      if(d.spawn_time == "N/A") {d.spawn_minutes = 0} else {d.spawn_minutes = ((+d.spawn_time_split[0] * 60) + (+d.spawn_time_split[1]))/60};
+    });
+
+    //console.log(data);
+
+//Question 1
+//Average weight and height of all pokemons
+    //Total count of pokemons
+    var countarray = data.map(function(a) {return a.count;});
+
+    var totalcount = countarray.reduce(function(s, d) {
+      return s + d;
+    }, 0);
+
+
+    //Total height of all pokemons
+    var heightarray = data.map(function(a) {return a.height_inches;});
+
+    var totalheight = heightarray.reduce(function(s, d) {
+      return s + d;
+    }, 0);
+
+
+    //Total weight of all pokemons
+    var weightarray = data.map(function(a) {return a.weight_lbs;});
+
+    var totalweight = weightarray.reduce(function(s, d) {
+      return s + d;
+    }, 0);
+
+
+    //Calculate averages
+    var average_weight = (totalweight/totalcount).toFixed(2);
+    var average_height = (totalheight/totalcount).toFixed(2);
+
+    console.log("Question 1");
+    console.log("Average pokemon weight (lbs): " + average_weight);
+    console.log("Average pokemon height (inches): " + average_height);
+
+
+//Question 2
+//Total egg distance
+//create new object listing all Egg Distances where Weaknesses array includes "Psychic" (if Psychic is not a weakness, egg distance = 0)
+    var egg_distances = data.map(function(a) {
+      if (a.weaknesses.includes("Psychic") == true) {
+      return a.egg_new
+      }
+      else
+      {
+      return 0
+      }
+    });
+
+    //console.log(egg_distances);
+
+//Sum up total of Egg Distances
+    var egg_distance_total = egg_distances.reduce(function(s, d) {
+    return s + d;
+   }, 0);
+  console.log("")
+  console.log("Question 2")
+    console.log("Total egg distance among pokemon with a weakness of 'Psychic': " + egg_distance_total);
+
+
+//Question 3
+//Total weaknesses by pokemon type
+var pokemon_types = {};
+
+//create new object listing each pokemon type and corresponding number of weaknesses
+  data.forEach(function(d) {
+      if (Object.keys(pokemon_types).indexOf(d.type) >= 0) {
+        pokemon_types[d.type] += d.weakness_count;
+      } else {
+        pokemon_types[d.type] = d.weakness_count;
+      }
+    });
+//console.log(pokemon_types);
+
+var result = Object.keys(pokemon_types).map(function(key){
+  return [key, pokemon_types[key]];
+});
+
+//console.log(result);
+
+//sort new array by number of weaknesses
+result.sort(function(a, b) {
+  return b[1] - a[1];
+})
+
+console.log("")
+console.log("Question 3")
+console.log("Type with highest average number of weaknesses: " + result[0]);
+
+
+
+//Question 4
+console.log("")
+console.log("Question 4")
+
+//create copy of original data to sort by weight
+var sortdata = data;
+
+sortdata.sort(function(a,b) {
+  return a.weight_lbs - b.weight_lbs;
+});
+
+
+//Create weight class 1 (lowest weights) and calculate average spawn minutes
+var weights_1 = sortdata.filter(function(d, i) {
+  return i <= 30;
+});
+
+var weights1 = weights_1.map(function(a) {return a.spawn_minutes;});
+
+var weights1_total = weights1.reduce(function(s, d) {
+    return s + d;
+  }, 0);
+
+//console.log(weights1);
+//console.log(weights1_total);
+console.log("Average spawn time of lowest weight class (in minutes): " + (weights1_total/weights1.length).toFixed(2));
+
+
+//Create weight class 2 and calculate average spawn minutes
+var weights_2 = sortdata.filter(function(d, i) {
+  return i > 30 && i <= 60;
+});
+
+var weights2 = weights_2.map(function(a) {return a.spawn_minutes;});
+
+var weights2_total = weights2.reduce(function(s, d) {
+    return s + d;
+  }, 0);
+
+console.log("Average spawn time of weight class 2 (in minutes): " + (weights2_total/weights2.length).toFixed(2));
+
+
+//Create weight class 3 and calculate average spawn minutes
+var weights_3 = sortdata.filter(function(d, i) {
+  return i > 60 && i <= 90;
+});
+
+var weights3 = weights_3.map(function(a) {return a.spawn_minutes;});
+
+var weights3_total = weights3.reduce(function(s, d) {
+    return s + d;
+  }, 0);
+
+console.log("Average spawn time of weight class 3 (in minutes): " + (weights3_total/weights3.length).toFixed(2));
+
+
+//Create weight class 4 and calculate average spawn minutes
+var weights_4 = sortdata.filter(function(d, i) {
+  return i > 90 && i <= 120;
+});
+
+var weights4 = weights_4.map(function(a) {return a.spawn_minutes;});
+
+var weights4_total = weights4.reduce(function(s, d) {
+    return s + d;
+  }, 0);
+
+console.log("Average spawn time of weight class 4 (in minutes): " + (weights4_total/weights4.length).toFixed(2));
+
+
+//Create weight class 5 (heaviest weights) and calculate average spawn minutes
+var weights_5 = sortdata.filter(function(d, i) {
+  return i > 120 && i <= 150;
+});
+
+var weights5 = weights_5.map(function(a) {return a.spawn_minutes;});
+
+var weights5_total = weights5.reduce(function(s, d) {
+    return s + d;
+  }, 0);
+
+console.log("Average spawn time of heaviest weight class (in minutes): " + (weights5_total/weights5.length).toFixed(2));
+
+});
+
+    </script>
+  </body>
+</html>
+
