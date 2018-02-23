@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="http://d3js.org/d3.v4.min.js"></script>
+    <style>
+.axis text {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.bar {
+  fill-opacity: 1.0;
+}
+
+.x.axis path {
+  display: none;
+}
+
+.grid line {
+        stroke: grey;
+        stroke-opacity: 0.5;
+        shape-rendering: crispEdges;
+      }
+
+.grid path {
+        stroke-width: 0;
+      }
+
+
+</style>
+  </head>
+  <body>
+    <div id="buttons">
+    <form id="form">
+    <input type="radio" name="stack" value="val1" checked> Sort By State<br>
+    <input type="radio" name="stack" value="val2"> Sort By Emissions, Descending<br>
+    <input type="radio" name="stack" value="val3"> Sort By Emissions, Ascending
+    </form>
+    </div>
+    <div>
+    <input type="text" id="time" maxlength="4"> Delay (in milliseconds)
+    </div>
+    <div id="viz-holder"></div>
+    <script src="http://d3js.org/d3.v4.min.js"></script>
+    <script src="https://d3js.org/d3-array.v1.min.js"></script>
+    <script src="./air_qual.js"></script>
+     </div>
+  </body>
+</html>
+
